@@ -1,0 +1,19 @@
+---
+- name: Output Ansible facts for all hosts
+  hosts: all
+  gather_facts: true
+  tasks:
+
+    - name: Get listing of installed collections
+      ansible.builtin.command: ls -l ./collections/ansible_collections
+      register: collection_listing
+      ignore_errors: true
+      changed_when: false
+
+    - name: Output installed collections
+      ansible.builtin.debug:
+        var: collection_listing.stdout
+
+    - name: Output Ansible facts
+      ansible.builtin.debug:
+        var: ansible_facts
