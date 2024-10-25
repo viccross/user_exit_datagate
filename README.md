@@ -2,4 +2,4 @@
 
 ## Purpose
 
-A sample repository for testing user_exit functionality.
+A sample repository for testing the user_exit functionality.

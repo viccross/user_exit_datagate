@@ -1,12 +1,12 @@
 #!/bin/bash
 
 echo
-echo "Here are the contents of the host_variables.json file:"
+echo "Here are the contents of the deployment_variables.json file:"
 echo
-cat ./host_variables.json
+cat ./deployment_variables.json
 echo
-echo "Here are the contents of the host_variables.yaml file:"
+echo "Here are the contents of the deployment_variables.yaml file:"
 echo
-cat ./host_variables.yaml
+cat ./deployment_variables.yaml
 echo
 exit 0
