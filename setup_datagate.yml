@@ -1,0 +1,54 @@
+---
+- name: Setup the Data Gate parameters on z/OS
+  hosts: all
+  gather_facts: true
+  tasks:
+
+    - name: Allocate the user JCL dataset
+      ibm_zos_core.zos_data_set:
+        name: IBMUSER.DATAGATE.JCL
+        type: pds
+        space_primary: 50
+        space_secondary: 15
+        space_type: trk
+        record_format: fb
+        record_length: 80
+        block_size: 27920
+
+    - name: Copy the $1GENCER job
+      ibm_zos_core.zos_copy:
+        src: files/$1GENCER.jcl
+        dest: IBMUSER.DATAGATE.JCL($1GENCER)
+        encoding:
+          from: UTF-8
+          to: IBM-037
+
+    - name: Copy the $2CPCERT job
+      ibm_zos_core.zos_copy:
+        src: files/$2CPCERT.jcl
+        dest: IBMUSER.DATAGATE.JCL($2CPCERT)
+        encoding:
+          from: UTF-8
+          to: IBM-037
+
+    - name: Submit the $0DBPARM job
+      ibm_zos_core.zos_job_submit:
+        src: files/$0DBPARM.jcl
+        location: local
+        wait_time_s: 30
+      register: response
+
+    - name: Submit the $3CRTTAB job
+      ibm_zos_core.zos_job_submit:
+        src: files/$3CRTTAB.jcl
+        location: local
+        wait_time_s: 30
+      register: response
+
+    - name: Submit the $4STPROC job
+      ibm_zos_core.zos_job_submit:
+        src: files/$4STPROC.jcl
+        location: local
+        wait_time_s: 30
+      register: response
+
