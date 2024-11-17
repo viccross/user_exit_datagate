@@ -1,6 +1,31 @@
 ---
+- name: Initialise some things
+  hosts: localhost
+  gather_facts: true
+  tasks:
+
+    - name: Fetch the RHOCP client
+      unarchive:
+        src: https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest-4.14/openshift-client-linux.tar.gz
+        dest: /usr/bin
+        include: oc
+        mode: '755'
+      register: result
+      retries: 10
+      until: "result is not failed"
+
+    - name: Extract kubeconfig from facts
+      copy:
+        content: "{{ cluster_kubeconfig }}"
+        dest: "/root/.kube/config"
+
+    - name: Determine cluster ingress domain
+      shell:
+        cmd: oc describe ingresscontroller default -n openshift-ingress-operator | grep domain | awk '{print $2;}'
+      register: cluster_domain
+
 - name: Setup the Data Gate parameters on z/OS
-  hosts: all
+  hosts: zos
   gather_facts: true
   tasks:
 
@@ -15,28 +40,41 @@
         record_length: 80
         block_size: 27920
 
-    - name: Copy the $1GENCER job
-      ibm_zos_core.zos_copy:
-        src: files/$1GENCER.jcl
-        dest: IBMUSER.DATAGATE.JCL($1GENCER)
-        encoding:
-          from: UTF-8
-          to: IBM-037
-
-    - name: Copy the $2CPCERT job
-      ibm_zos_core.zos_copy:
-        src: files/$2CPCERT.jcl
-        dest: IBMUSER.DATAGATE.JCL($2CPCERT)
-        encoding:
-          from: UTF-8
-          to: IBM-037
-
     - name: Submit the $0DBPARM job
       ibm_zos_core.zos_job_submit:
         src: files/$0DBPARM.jcl
         location: local
         wait_time_s: 30
       register: response
+
+    - name: Issue stop command for DBD1
+      ibm_zos_core.zos_operator:
+        cmd: "-DBD1 STOP DB2"
+        wait_time_s: 300       
+
+    - name: Issue start command for DBD1
+      ibm_zos_core.zos_operator:
+        cmd: "-DBD1 START DB2"
+        wait_time_s: 10       
+
+    - name: Copy the $1GENCER job
+      ibm_zos_core.zos_copy:
+        src: files/$1GENCER.jcl
+        dest: IBMUSER.DATAGATE.JCL($1GENCER)
+
+    - name: Copy the $2CPCERT job
+      ibm_zos_core.zos_copy:
+        src: files/$2CPCERT.jcl
+        dest: IBMUSER.DATAGATE.JCL($2CPCERT)
+
+    - name: Copy/replace the DBD1WLMG STC JCL
+      ibm_zos_core.zos_copy:
+        src: files/DBD1WLMG.jcl
+        dest: SYS1.PROCLIB(DBD1WLMG)
+        force: true
+        force_lock: true
+        backup: true
+        backup_name: DBD1WLM9
 
     - name: Submit the $3CRTTAB job
       ibm_zos_core.zos_job_submit:
@@ -50,5 +88,61 @@
         src: files/$4STPROC.jcl
         location: local
         wait_time_s: 30
-      register: response
+      register: result
+      until: "result is not failed"
+      retries: 2
+      delay: 3
 
+    - name: Fetch existing PAGENT config file
+      ibm_zos_core.zos_fetch:
+        src: TCPIP.TCPPARMS(PAGCONF)
+        dest: "{{ playbook_dir }}/pagent.conf"
+    
+    - name: Get the current ATTLS config file name
+      shell:
+        cmd: grep -i TTLSConfig {{ playbook_dir }}/pagent.conf | awk '{print $2;}'
+      register: pagentfile
+      delegate_to: localhost
+
+    - name: Action the PAGENT config file update for OLD FILE (PDS member)
+      block:
+      when: pagentfile.stdout is "TCPIP.TCPPARMS(PAGTTLS)"
+      - name: Update TTLS config file
+        ibm_zos_core.zos_blockinfle:
+          src: "{{ pagentfile.stdout }}"
+          block: "{{ lookup('template', 'files/pagttls.conf.j2') }}"
+          insertbefore: EOF
+          force: true
+          backup: true
+          backup_name: PAGTTLS9
+      - name: Copy the file to zFS
+        ibm_zos_core.zos_copy:
+          src: "{{ pagentfile.stdout }}"
+          dest: /etc/pagent/pagttls.conf
+          remote_src: true
+      - name: Remove the old file
+        ibm_zos_core.zos_data_set:
+          name: "{{ pagentfile.stdout }}"
+          type: member
+          state: absent
+
+    - name: Action the PAGENT config file update for NEW FILE (zFS file)
+      block:
+      when: pagentfile.stdout is "/etc/pagent/pagttls.conf"
+      - name: Update TTLS config file
+        ibm_zos_core.zos_blockinfle:
+          src: "{{ pagentfile.stdout }}"
+          block: "{{ lookup('template', 'files/pagttls.conf.j2') }}"
+          insertbefore: EOF
+          force: true
+          backup: true
+          backup_name: "{{ pagentfile.stdout }}.bak"
+
+    - name: Update PAGENT config file
+      ibm_zos_core.zos_lineinfile:
+        src: TCPIP.TCPPARMS(PAGCONF)
+        regexp: /^TTLSConfig /
+        line: TTLSConfig       /etc/pagent/pagttls.conf
+        backup: true
+        backup_name: PAGCONF9
+        force: true
