@@ -1,653 +1,83 @@
-##############################################            
-# DATAGATE STUFF                                          
-# Rules for SSL access to Db2 DDF                         
-###############################################           
-TTLSRule DBD1Rule8102                                     
-{                                                         
-   LocalPortRange           8102                          
-   Direction                Inbound                       
-   TTLSGroupActionRef       Db2SslGroup                   
-   TTLSEnvironmentActionRef DBD1SslEnv                    
-}                                                         
-TTLSGroupAction Db2SslGroup                               
-{                                                         
-   TTLSEnabled       On                                   
-   CtraceClearText   On                                   
-   FIPS140 Off                                            
-   Trace  7                                               
-}                                                         
-TTLSEnvironmentAction DBD1SslEnv                          
-{                                                         
-   TTLSKeyRingParms                                       
-   {                                                      
-       Keyring          DBD1RING                          
-   }                                                      
-   TTLSEnvironmentAdvancedParms                           
-   {                                                      
-    SSLV2 OFF                                             
-    SSLV3 OFF                                             
-    TLSV1 OFF                                             
-    TLSV1.1 OFF                                           
-    TLSV1.2 ON                                            
-    TLSV1.3 OFF                                           
-   ClientAuthType PassThru                                
-   }                                                      
-   HandShakeRole         Server                           
-   TTLSCipherParmsRef    Db2SslCipherParms                
-}                                                            
-TTLSCipherParms Db2SslCipherParms                            
-{                                                            
-    V3CipherSuites     TLS_RSA_WITH_AES_128_GCM_SHA256       
-    V3CipherSuites     TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 
-    V3CipherSuites     TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 
-    V3CipherSuites     TLS_RSA_WITH_AES_128_CBC_SHA          
-}                                                            
-##### BEGIN anka/vic Ansible managed block #####             
-#######################                                      
-# Secure HTTP Client  #                                      
-#######################                                      
-TTLSGroupAction secure_http_client_group                     
-{                                                            
-   TTLSEnabled On                                            
-}                                                            
-TTLSEnvironmentAction secure_http_client_env                 
-{                                                            
-   TTLSKeyringParms                                          
-   {                                                         
-      Keyring SYSTEM/HTTPS_RING                              
-   }                                                         
-   HandshakeRole Client                                      
-   TTLSEnvironmentAdvancedParms                              
-   {                                                         
-      ApplicationControlled On                               
-      SecondaryMap On                                        
-      TLSv1   Off                                            
-      TLSv1.1 Off                                            
-      TLSv1.2 On                                             
-      ClientHandshakeSNI Required                            
-      ClientHandshakeSNIMatch Optional                       
-      ClientHandshakeSNIList app.example.com                 
-   }                                                         
-   TTLSCipherParmsRef http_client_ciphers                    
-}                                                            
-TTLSCipherParms http_client_ciphers                          
-{                                                            
-      V3CipherSuites TLS_DH_DSS_WITH_AES_256_GCM_SHA384      
-      V3CipherSuites TLS_DH_DSS_WITH_AES_128_GCM_SHA256      
-      V3CipherSuites TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256 
-      V3CipherSuites TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384 
-      V3CipherSuites TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256  
-      V3CipherSuites TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384  
-      V3CipherSuites TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256   
-      V3CipherSuites TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384   
-      V3CipherSuites TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256    
-      V3CipherSuites TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384    
-      V3CipherSuites TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256 
-      V3CipherSuites TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384 
-      V3CipherSuites TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256  
-      V3CipherSuites TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384  
-      V3CipherSuites TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256   
-      V3CipherSuites TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384   
-      V3CipherSuites TLS_RSA_WITH_AES_128_CBC_SHA256         
-      V3CipherSuites TLS_RSA_WITH_AES_256_CBC_SHA256         
-      V3CipherSuites TLS_DH_DSS_WITH_AES_128_CBC_SHA256      
-      V3CipherSuites TLS_DH_RSA_WITH_AES_128_CBC_SHA256      
-      V3CipherSuites TLS_DHE_DSS_WITH_AES_128_CBC_SHA256     
-      V3CipherSuites TLS_DHE_RSA_WITH_AES_128_CBC_SHA256     
-      V3CipherSuites TLS_DH_DSS_WITH_AES_256_CBC_SHA256      
-      V3CipherSuites TLS_DH_RSA_WITH_AES_256_CBC_SHA256      
-      V3CipherSuites TLS_DHE_DSS_WITH_AES_256_CBC_SHA256     
-      V3CipherSuites TLS_DHE_RSA_WITH_AES_256_CBC_SHA256     
-      V3CipherSuites TLS_RSA_WITH_AES_128_GCM_SHA256         
-      V3CipherSuites TLS_RSA_WITH_AES_256_GCM_SHA384         
-       V3CipherSuites TLS_DHE_RSA_WITH_AES_128_GCM_SHA256    
-       V3CipherSuites TLS_DHE_RSA_WITH_AES_256_GCM_SHA384    
-       V3CipherSuites TLS_DH_RSA_WITH_AES_128_GCM_SHA256     
-       V3CipherSuites TLS_DH_RSA_WITH_AES_256_GCM_SHA384     
-       V3CipherSuites TLS_DHE_DSS_WITH_AES_128_GCM_SHA256    
-       V3CipherSuites TLS_DHE_DSS_WITH_AES_256_GCM_SHA384    
-       V3CipherSuites TLS_DH_DSS_WITH_AES_128_GCM_SHA256     
-       V3CipherSuites TLS_DH_DSS_WITH_AES_256_GCM_SHA384     
-}                                                                
-TTLSRule secure_http_client_rule                                 
-{                                                                
-   RemotePortRange 445                                           
-   Direction Outbound                                            
-   TTLSGroupActionRef secure_http_client_group                   
-   TTLSEnvironmentActionRef secure_http_client_env               
-}                                                                
-TTLSCipherParms              StunnelParms                        
-{                                                                
-   V3CipherSuites4Char       C02FC030                            
-}                                                                
-TTLSGroupAction  StunnelGroup                                    
-{                                                                
-       TTLSEnabled                       On                      
-}                                                                
-IpAddrGroup ROKSCluster                                          
-{                                                                
-    Ipaddr primary                                               
-    {                                                            
-    Addr 163.66.86.163                                           
-    }                                                            
-    Ipaddr second                                                
-  {                                                              
-    Addr 163.66.95.222                                           
-  }                                                              
-}                                                                
-TTLSRule StunnelDWP1Sim148                                       
-{                                                                
-       REMOTEPORTRANGE                   1-20000                 
-       RemoteAddr                        0.0.0.0/0               
-       Direction                         Outbound                
-       TTLSGroupActionRef                StunnelGroup            
-       TTLSEnvironmentActionRef          StunnelClientEnvironment
-}                                                                
-TTLSEnvironmentAction        StunnelClientEnvironment            
-{                                                                
-      TTLSKeyRingParms                                   
-         {                                               
-           Keyring                       STCDB2/DBD1RING 
-         }                                               
-      TTLSEnvironmentAdvancedParms                       
-          {                                              
-            SSLv2 Off                                    
-            SSLv3 Off                                    
-             TLSv1 Off                                   
-             TLSv1.1 Off                                 
-             TLSv1.2 On                                  
-             TLSv1.3 Off                                 
-             ClientAuthType PassThru                     
-             CLIENTHANDSHAKESNI REQUIRED                 
-             CLIENTHANDSHAKESNIMATCH OPTIONAL            
-             CLIENTHANDSHAKESNILIST dg1.{{ rhocp_cluster_fqdn }}
-           }                                             
-       HandshakeRole                     CLIENT          
-       TTLSCipherParmsRef                StunnelParms    
-       Trace                             255             
- }                                                       
- ##  Begin Ansible Block Insert  ##                      
- ##                                                      
- TTLSRule zOS_DB2                                        
-   {                                                     
-     LocalPortRange 8001-8002                            
-     Direction Inbound                                   
-     TTLSGroupActionRef grp_DB2                          
-     TTLSEnvironmentActionRef act_DB2                    
-   }                                                     
- TTLSEnvironmentAction  act_DB2                          
-   {                                                     
-     HandshakeRole Server                                
-     TTLSKeyRingParms                                    
-     {                                                   
-       Keyring DB2RING                                   
-     }                                                   
-   TTLSEnvironmentAdvancedParms                               
-     {                                                        
-         TLSv1                           Off                  
-         TLSv1.1                         Off                  
-         TLSv1.2                         On                   
-         SSLV3 Off                                            
-     }                                                        
-     TTLSCipherParms                                          
-     {                                                        
-       V3CipherSuites TLS_DH_DSS_WITH_AES_256_GCM_SHA384      
-       V3CipherSuites TLS_DH_DSS_WITH_AES_128_GCM_SHA256      
-       V3CipherSuites TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256 
-       V3CipherSuites TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384 
-       V3CipherSuites TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256  
-       V3CipherSuites TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384  
-       V3CipherSuites TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256   
-       V3CipherSuites TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384   
-       V3CipherSuites TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256    
-       V3CipherSuites TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384    
-       V3CipherSuites TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256 
-       V3CipherSuites TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384 
-       V3CipherSuites TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256  
-       V3CipherSuites TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384  
-       V3CipherSuites TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256   
-      V3CipherSuites TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384    
-      V3CipherSuites TLS_RSA_WITH_AES_128_CBC_SHA256          
-      V3CipherSuites TLS_RSA_WITH_AES_256_CBC_SHA256          
-      V3CipherSuites TLS_DH_DSS_WITH_AES_128_CBC_SHA256       
-      V3CipherSuites TLS_DH_RSA_WITH_AES_128_CBC_SHA256       
-      V3CipherSuites TLS_DHE_DSS_WITH_AES_128_CBC_SHA256      
-      V3CipherSuites TLS_DHE_RSA_WITH_AES_128_CBC_SHA256      
-      V3CipherSuites TLS_DH_DSS_WITH_AES_256_CBC_SHA256       
-      V3CipherSuites TLS_DH_RSA_WITH_AES_256_CBC_SHA256       
-      V3CipherSuites TLS_DHE_DSS_WITH_AES_256_CBC_SHA256      
-      V3CipherSuites TLS_DHE_RSA_WITH_AES_256_CBC_SHA256      
-      V3CipherSuites TLS_RSA_WITH_AES_128_GCM_SHA256          
-      V3CipherSuites TLS_RSA_WITH_AES_256_GCM_SHA384          
-      V3CipherSuites TLS_DHE_RSA_WITH_AES_128_GCM_SHA256  
-      V3CipherSuites TLS_DHE_RSA_WITH_AES_256_GCM_SHA384  
-      V3CipherSuites TLS_DH_RSA_WITH_AES_128_GCM_SHA256   
-      V3CipherSuites TLS_DH_RSA_WITH_AES_256_GCM_SHA384   
-      V3CipherSuites TLS_DHE_DSS_WITH_AES_128_GCM_SHA256  
-      V3CipherSuites TLS_DHE_DSS_WITH_AES_256_GCM_SHA384  
-      V3CipherSuites TLS_DH_DSS_WITH_AES_128_GCM_SHA256   
-      V3CipherSuites TLS_DH_DSS_WITH_AES_256_GCM_SHA384   
-    }                                                     
-  }                                                       
-TTLSGroupAction grp_DB2                                   
-  {                                                       
-    TTLSEnabled On                                        
-  }                                                       
-TTLSRule zOS_DB213                                        
-  {                                                       
-    LocalPortRange 8999                                   
-    Direction Inbound                                     
-    TTLSGroupActionRef grp_DB213                          
-    TTLSEnvironmentActionRef act_DB213                    
-  }                                                       
-TTLSEnvironmentAction  act_DB213                          
-  {                                                       
-    HandshakeRole Server                                  
-    TTLSKeyRingParms                                      
-    {                                                     
-      Keyring DB2RING                                     
-    }                                                     
-  TTLSEnvironmentAdvancedParms                            
-    {                                                     
-        TLSv1                           Off               
-        TLSv1.1                         Off               
-        TLSv1.2                         On                
-        SSLV3 Off                                         
-    }                                                     
-    TTLSCipherParms                                       
-    {                                                     
-      V3CipherSuites TLS_DH_DSS_WITH_AES_256_GCM_SHA384       
-      V3CipherSuites TLS_DH_DSS_WITH_AES_128_GCM_SHA256       
-      V3CipherSuites TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256  
-       V3CipherSuites TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384 
-       V3CipherSuites TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256  
-       V3CipherSuites TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384  
-       V3CipherSuites TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256   
-       V3CipherSuites TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384   
-       V3CipherSuites TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256    
-       V3CipherSuites TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384    
-       V3CipherSuites TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256 
-       V3CipherSuites TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384 
-       V3CipherSuites TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256  
-       V3CipherSuites TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384  
-       V3CipherSuites TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256   
-       V3CipherSuites TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384   
-       V3CipherSuites TLS_RSA_WITH_AES_128_CBC_SHA256         
-       V3CipherSuites TLS_RSA_WITH_AES_256_CBC_SHA256         
-       V3CipherSuites TLS_DH_DSS_WITH_AES_128_CBC_SHA256      
-       V3CipherSuites TLS_DH_RSA_WITH_AES_128_CBC_SHA256      
-       V3CipherSuites TLS_DHE_DSS_WITH_AES_128_CBC_SHA256     
-       V3CipherSuites TLS_DHE_RSA_WITH_AES_128_CBC_SHA256     
-       V3CipherSuites TLS_DH_DSS_WITH_AES_256_CBC_SHA256      
-       V3CipherSuites TLS_DH_RSA_WITH_AES_256_CBC_SHA256      
-       V3CipherSuites TLS_DHE_DSS_WITH_AES_256_CBC_SHA256     
-       V3CipherSuites TLS_DHE_RSA_WITH_AES_256_CBC_SHA256     
-       V3CipherSuites TLS_RSA_WITH_AES_128_GCM_SHA256         
-       V3CipherSuites TLS_RSA_WITH_AES_256_GCM_SHA384         
-       V3CipherSuites TLS_DHE_RSA_WITH_AES_128_GCM_SHA256     
-       V3CipherSuites TLS_DHE_RSA_WITH_AES_256_GCM_SHA384     
-       V3CipherSuites TLS_DH_RSA_WITH_AES_128_GCM_SHA256      
-       V3CipherSuites TLS_DH_RSA_WITH_AES_256_GCM_SHA384      
-       V3CipherSuites TLS_DHE_DSS_WITH_AES_128_GCM_SHA256     
-       V3CipherSuites TLS_DHE_DSS_WITH_AES_256_GCM_SHA384     
-       V3CipherSuites TLS_DH_DSS_WITH_AES_128_GCM_SHA256      
-       V3CipherSuites TLS_DH_DSS_WITH_AES_256_GCM_SHA384      
-     }                                                        
-   }                                                          
- TTLSGroupAction grp_DB213                                    
-   {                                                          
-     TTLSEnabled On                                           
-   }                                                          
- TTLSRule zOS_Debugger_Debug_Manager                          
-   {                                                          
-     LocalPortRange 8135                                      
-     Direction Inbound                                        
-     TTLSGroupActionRef grp_dbgmgr                            
-     TTLSEnvironmentActionRef act_zOS_Debugger_Debug_Manager  
-   }                                                          
- TTLSEnvironmentAction  act_zOS_Debugger_Debug_Manager        
-   {                                                          
-     HandshakeRole Server                                     
-     TTLSKeyRingParms                                         
-       {                                                      
-         Keyring DBGRING                                      
-       }                                                      
-     TTLSEnvironmentAdvancedParms                             
-      {                                                       
-        TLSv1                           Off                   
-        TLSv1.1                         Off                   
-        TLSv1.2                         On                    
-        SSLV3 Off                                             
-      }                                                       
-    TTLSCipherParms                                           
-    {                                                         
-      V3CipherSuites TLS_DH_DSS_WITH_AES_256_GCM_SHA384       
-      V3CipherSuites TLS_DH_DSS_WITH_AES_128_GCM_SHA256       
-      V3CipherSuites TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256  
-      V3CipherSuites TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384  
-      V3CipherSuites TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256   
-      V3CipherSuites TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384   
-      V3CipherSuites TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256    
-      V3CipherSuites TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384    
-      V3CipherSuites TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256     
-      V3CipherSuites TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384    
-      V3CipherSuites TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256 
-      V3CipherSuites TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384 
-      V3CipherSuites TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256  
-      V3CipherSuites TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384  
-      V3CipherSuites TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256   
-      V3CipherSuites TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384   
-      V3CipherSuites TLS_RSA_WITH_AES_128_CBC_SHA256         
-      V3CipherSuites TLS_RSA_WITH_AES_256_CBC_SHA256         
-      V3CipherSuites TLS_DH_DSS_WITH_AES_128_CBC_SHA256      
-      V3CipherSuites TLS_DH_RSA_WITH_AES_128_CBC_SHA256      
-      V3CipherSuites TLS_DHE_DSS_WITH_AES_128_CBC_SHA256     
-      V3CipherSuites TLS_DHE_RSA_WITH_AES_128_CBC_SHA256     
-      V3CipherSuites TLS_DH_DSS_WITH_AES_256_CBC_SHA256      
-      V3CipherSuites TLS_DH_RSA_WITH_AES_256_CBC_SHA256      
-      V3CipherSuites TLS_DHE_DSS_WITH_AES_256_CBC_SHA256     
-      V3CipherSuites TLS_DHE_RSA_WITH_AES_256_CBC_SHA256     
-      V3CipherSuites TLS_RSA_WITH_AES_128_GCM_SHA256         
-      V3CipherSuites TLS_RSA_WITH_AES_256_GCM_SHA384         
-      V3CipherSuites TLS_DHE_RSA_WITH_AES_128_GCM_SHA256     
-      V3CipherSuites TLS_DHE_RSA_WITH_AES_256_GCM_SHA384     
-      V3CipherSuites TLS_DH_RSA_WITH_AES_128_GCM_SHA256      
-      V3CipherSuites TLS_DH_RSA_WITH_AES_256_GCM_SHA384      
-      V3CipherSuites TLS_DHE_DSS_WITH_AES_128_GCM_SHA256     
-      V3CipherSuites TLS_DHE_DSS_WITH_AES_256_GCM_SHA384     
-      V3CipherSuites TLS_DH_DSS_WITH_AES_128_GCM_SHA256      
-      V3CipherSuites TLS_DH_DSS_WITH_AES_256_GCM_SHA384      
-    }                                                        
-  }                                                          
-TTLSGroupAction grp_dbgmgr                                   
-  {                                                          
-    TTLSEnabled On                                           
-  }                                                          
-TTLSRule zOS_CSKL                                            
-  {                                                          
-    LocalPortRange 8120                                      
-    Direction Inbound                                        
-    TTLSGroupActionRef grp_CSKL                               
-    TTLSEnvironmentActionRef act_CSKL                         
-  }                                                           
-TTLSEnvironmentAction  act_CSKL                               
-  {                                                           
-    HandshakeRole Server                                      
-    TTLSKeyRingParms                                          
-      {                                                       
-        Keyring CICSRNG                                       
-      }                                                       
-    TTLSEnvironmentAdvancedParms                              
-      {                                                       
-        TLSv1                           Off                   
-        TLSv1.1                         Off                   
-        TLSv1.2                         On                    
-        SSLV3 Off                                             
-      }                                                       
-    TTLSCipherParms                                           
-    {                                                         
-      V3CipherSuites TLS_DH_DSS_WITH_AES_256_GCM_SHA384       
-      V3CipherSuites TLS_DH_DSS_WITH_AES_128_GCM_SHA256       
-      V3CipherSuites TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256  
-      V3CipherSuites TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384  
-      V3CipherSuites TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256   
-      V3CipherSuites TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384   
-      V3CipherSuites TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256    
-      V3CipherSuites TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384    
-      V3CipherSuites TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256     
-      V3CipherSuites TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384     
-      V3CipherSuites TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256  
-      V3CipherSuites TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384  
-      V3CipherSuites TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256   
-      V3CipherSuites TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384   
-      V3CipherSuites TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256    
-      V3CipherSuites TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384    
-      V3CipherSuites TLS_RSA_WITH_AES_128_CBC_SHA256          
-      V3CipherSuites TLS_RSA_WITH_AES_256_CBC_SHA256          
-      V3CipherSuites TLS_DH_DSS_WITH_AES_128_CBC_SHA256   
-      V3CipherSuites TLS_DH_RSA_WITH_AES_128_CBC_SHA256   
-      V3CipherSuites TLS_DHE_DSS_WITH_AES_128_CBC_SHA256  
-      V3CipherSuites TLS_DHE_RSA_WITH_AES_128_CBC_SHA256  
-      V3CipherSuites TLS_DH_DSS_WITH_AES_256_CBC_SHA256   
-      V3CipherSuites TLS_DH_RSA_WITH_AES_256_CBC_SHA256   
-      V3CipherSuites TLS_DHE_DSS_WITH_AES_256_CBC_SHA256  
-      V3CipherSuites TLS_DHE_RSA_WITH_AES_256_CBC_SHA256  
-      V3CipherSuites TLS_RSA_WITH_AES_128_GCM_SHA256      
-      V3CipherSuites TLS_RSA_WITH_AES_256_GCM_SHA384      
-      V3CipherSuites TLS_DHE_RSA_WITH_AES_128_GCM_SHA256  
-      V3CipherSuites TLS_DHE_RSA_WITH_AES_256_GCM_SHA384  
-      V3CipherSuites TLS_DH_RSA_WITH_AES_128_GCM_SHA256   
-      V3CipherSuites TLS_DH_RSA_WITH_AES_256_GCM_SHA384   
-      V3CipherSuites TLS_DHE_DSS_WITH_AES_128_GCM_SHA256  
-      V3CipherSuites TLS_DHE_DSS_WITH_AES_256_GCM_SHA384  
-      V3CipherSuites TLS_DH_DSS_WITH_AES_128_GCM_SHA256   
-      V3CipherSuites TLS_DH_DSS_WITH_AES_256_GCM_SHA384   
-    }                                                     
-  }                                                       
-TTLSGroupAction grp_CSKL                                  
-  {                                                       
-    TTLSEnabled On                                        
-  }                                                       
-##                                                        
-##                                                        
-TTLSRule tn_serv                                          
-  {                                                       
-    LocalPortRange 992                                    
-    Direction Inbound                                     
-    Jobname TN3270                                        
-    TTLSGroupActionRef tn_grp_act                         
-    TTLSEnvironmentActionRef tn_env_act                   
-  }                                                       
-TTLSGroupAction tn_grp_act                                
-  {                                                       
-    TTLSEnabled On                                        
-    Trace 7                                                  
-    GroupUserInstance 1                                      
-  }                                                          
-TTLSEnvironmentAction tn_env_act                             
-  {                                                          
-    HandshakeRole Server                                     
-    TTLSKeyringParms                                         
-      {                                                      
-        Keyring SYSTEM/TELNET_RING                           
-      }                                                      
-    TTLSEnvironmentAdvancedParms                             
-      {                                                      
-        ApplicationControlled On                             
-        TLSv1   Off                                          
-        TLSv1.1 Off                                          
-        TLSv1.2 On                                           
-      }                                                      
-    TTLSCipherParms                                          
-    {                                                        
-      V3CipherSuites TLS_DH_DSS_WITH_AES_256_GCM_SHA384      
-      V3CipherSuites TLS_DH_DSS_WITH_AES_128_GCM_SHA256      
-      V3CipherSuites TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256 
-      V3CipherSuites TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384 
-      V3CipherSuites TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256  
-      V3CipherSuites TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384  
-      V3CipherSuites TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256   
-      V3CipherSuites TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384   
-      V3CipherSuites TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256    
-      V3CipherSuites TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384    
-      V3CipherSuites TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256 
-      V3CipherSuites TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384 
-       V3CipherSuites TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256 
-       V3CipherSuites TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384 
-       V3CipherSuites TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256  
-       V3CipherSuites TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384  
-       V3CipherSuites TLS_RSA_WITH_AES_128_CBC_SHA256        
-       V3CipherSuites TLS_RSA_WITH_AES_256_CBC_SHA256        
-       V3CipherSuites TLS_DH_DSS_WITH_AES_128_CBC_SHA256  
-       V3CipherSuites TLS_DH_RSA_WITH_AES_128_CBC_SHA256  
-       V3CipherSuites TLS_DHE_DSS_WITH_AES_128_CBC_SHA256 
-       V3CipherSuites TLS_DHE_RSA_WITH_AES_128_CBC_SHA256 
-       V3CipherSuites TLS_DH_DSS_WITH_AES_256_CBC_SHA256  
-       V3CipherSuites TLS_DH_RSA_WITH_AES_256_CBC_SHA256  
-       V3CipherSuites TLS_DHE_DSS_WITH_AES_256_CBC_SHA256 
-       V3CipherSuites TLS_DHE_RSA_WITH_AES_256_CBC_SHA256 
-       V3CipherSuites TLS_RSA_WITH_AES_128_GCM_SHA256     
-       V3CipherSuites TLS_RSA_WITH_AES_256_GCM_SHA384     
-       V3CipherSuites TLS_DHE_RSA_WITH_AES_128_GCM_SHA256 
-       V3CipherSuites TLS_DHE_RSA_WITH_AES_256_GCM_SHA384 
-       V3CipherSuites TLS_DH_RSA_WITH_AES_128_GCM_SHA256  
-       V3CipherSuites TLS_DH_RSA_WITH_AES_256_GCM_SHA384  
-       V3CipherSuites TLS_DHE_DSS_WITH_AES_128_GCM_SHA256 
-       V3CipherSuites TLS_DHE_DSS_WITH_AES_256_GCM_SHA384 
-       V3CipherSuites TLS_DH_DSS_WITH_AES_128_GCM_SHA256  
-       V3CipherSuites TLS_DH_DSS_WITH_AES_256_GCM_SHA384  
-     }                                                    
-     EnvironmentUserInstance 1                            
-   }                                                      
- #######################                                  
- #  Secure FTP Client  #                                  
- #######################                                  
- TTLSGroupAction secure_ftp_client_group                  
- {                                                        
-    TTLSEnabled On                                        
- }                                                        
- TTLSEnvironmentAction secure_ftp_client_env              
- {                                                        
-    TTLSKeyringParms                                      
-    {                                                     
-       Keyring SYSTEM/FTPS_RING                           
-    }                                                     
-    HandshakeRole Client                                  
-    TTLSEnvironmentAdvancedParms                          
-    {                                                     
-       ApplicationControlled On                      
-       SecondaryMap On                               
-       TLSv1   Off                                   
-       TLSv1.1 Off                                   
-       TLSv1.2 On                                    
-    }                                                
-    TTLSCipherParmsRef ftp_client_ciphers            
- }                                                   
- TTLSCipherParms ftp_client_ciphers                  
- {                                                   
-   V3CipherSuites TLS_RSA_WITH_AES_256_CBC_SHA       
-}                                                    
-TTLSRule secure_ftp_client_rule                      
-{                                                    
-   RemotePortRange 21                                
-   Direction Outbound                                
-   TTLSGroupActionRef secure_ftp_client_group        
-   TTLSEnvironmentActionRef secure_ftp_client_env    
-}                                                    
-                                                     
-#######################                              
-#  Secure FTP Server  #                              
-#######################                              
-TTLSGroupAction secure_ftp_server_group              
-{                                                    
-   TTLSEnabled On                                    
-}                                                    
-TTLSEnvironmentAction secure_ftp_server_env          
-{                                                    
-   TTLSKeyringParms                                  
-   {                                                 
-      Keyring SYSTEM/FTPS_RING                       
-   }                                                 
-   HandshakeRole Server                              
-   TTLSEnvironmentAdvancedParms                      
-   {                                                 
-      ApplicationControlled On                       
-      SecondaryMap On                               
-      TLSv1   Off                                   
-      TLSv1.1 Off                                   
-      TLSv1.2 On                                    
-   }                                                
-   TTLSCipherParmsRef ftp_server_ciphers            
-}                                                   
-TTLSCipherParms ftp_server_ciphers                  
-{                                                   
-   V3CipherSuites TLS_RSA_WITH_AES_256_CBC_SHA      
-}                                                   
-TTLSRule secure_ftp_server_rule                     
-{                                                   
-   LocalPortRange 21                                
-   Direction Inbound                                
-   TTLSGroupActionRef secure_ftp_server_group       
-   TTLSEnvironmentActionRef secure_ftp_server_env   
-}                                                   
-##  End Ansible Block Insert ##                     
-                                                    
-##############################################      
-# DATAGATE STUFF                                    
-# Rules for SSL access to Db2 DDF                   
-###############################################     
-##### BEGIN anka/vic Ansible managed block #####    
-#######################                             
-# Secure HTTP Client  #                             
-#######################                             
-TTLSGroupAction secure_http_client_group            
-{                                                   
-   TTLSEnabled On                                   
-}                                                   
-TTLSEnvironmentAction secure_http_client_env        
-{                                                   
-   TTLSKeyringParms                                 
-   {                                                
-      Keyring SYSTEM/HTTPS_RING                     
-   }                                                          
-   HandshakeRole Client                                       
-   TTLSEnvironmentAdvancedParms                               
-   {                                                          
-      ApplicationControlled On                                
-      SecondaryMap On                                         
-      TLSv1   Off                                             
-      TLSv1.1 Off                                             
-      TLSv1.2 On                                              
-      ClientHandshakeSNI Required                             
-      ClientHandshakeSNIMatch Optional                        
-      ClientHandshakeSNIList app.example.com                  
-   }                                                          
-   TTLSCipherParmsRef http_client_ciphers                     
-}                                                             
-TTLSCipherParms http_client_ciphers                           
-{                                                             
-      V3CipherSuites TLS_DH_DSS_WITH_AES_256_GCM_SHA384       
-      V3CipherSuites TLS_DH_DSS_WITH_AES_128_GCM_SHA256       
-      V3CipherSuites TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256  
-      V3CipherSuites TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384  
-      V3CipherSuites TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256   
-      V3CipherSuites TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384   
-      V3CipherSuites TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256    
-      V3CipherSuites TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384    
-      V3CipherSuites TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256     
-      V3CipherSuites TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384     
-      V3CipherSuites TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256  
-      V3CipherSuites TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384  
-      V3CipherSuites TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256   
-      V3CipherSuites TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384   
-      V3CipherSuites TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256    
-      V3CipherSuites TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384    
-      V3CipherSuites TLS_RSA_WITH_AES_128_CBC_SHA256          
-      V3CipherSuites TLS_RSA_WITH_AES_256_CBC_SHA256          
-      V3CipherSuites TLS_DH_DSS_WITH_AES_128_CBC_SHA256       
-      V3CipherSuites TLS_DH_RSA_WITH_AES_128_CBC_SHA256       
-      V3CipherSuites TLS_DHE_DSS_WITH_AES_128_CBC_SHA256  
-      V3CipherSuites TLS_DHE_RSA_WITH_AES_128_CBC_SHA256  
-      V3CipherSuites TLS_DH_DSS_WITH_AES_256_CBC_SHA256   
-      V3CipherSuites TLS_DH_RSA_WITH_AES_256_CBC_SHA256   
-      V3CipherSuites TLS_DHE_DSS_WITH_AES_256_CBC_SHA256  
-      V3CipherSuites TLS_DHE_RSA_WITH_AES_256_CBC_SHA256  
-      V3CipherSuites TLS_RSA_WITH_AES_128_GCM_SHA256      
-      V3CipherSuites TLS_RSA_WITH_AES_256_GCM_SHA384      
-      V3CipherSuites TLS_DHE_RSA_WITH_AES_128_GCM_SHA256  
-      V3CipherSuites TLS_DHE_RSA_WITH_AES_256_GCM_SHA384  
-      V3CipherSuites TLS_DH_RSA_WITH_AES_128_GCM_SHA256   
-      V3CipherSuites TLS_DH_RSA_WITH_AES_256_GCM_SHA384   
-      V3CipherSuites TLS_DHE_DSS_WITH_AES_128_GCM_SHA256  
-      V3CipherSuites TLS_DHE_DSS_WITH_AES_256_GCM_SHA384  
-      V3CipherSuites TLS_DH_DSS_WITH_AES_128_GCM_SHA256   
-      V3CipherSuites TLS_DH_DSS_WITH_AES_256_GCM_SHA384   
-}                                                         
-TTLSRule secure_http_client_rule                          
-{                                                         
-   RemotePortRange 449                                    
-   Direction Outbound                                     
-   TTLSGroupActionRef secure_http_client_group            
-   TTLSEnvironmentActionRef secure_http_client_env        
-}                                                         
-##### END anka/vic Ansible managed block #####            
+###############################################
+# DATAGATE STUFF
+# Rules for SSL access to Db2 DDF
+###############################################
+TTLSRule DBD1Rule8102
+{
+  LocalPortRange           8102
+  Direction                Inbound
+  TTLSGroupActionRef       Db2SslGroup
+  TTLSEnvironmentActionRef DBD1SslEnv
+}
+TTLSGroupAction Db2SslGroup
+{
+  TTLSEnabled       On
+  CtraceClearText   On
+  FIPS140 Off
+  Trace  7
+}
+TTLSEnvironmentAction DBD1SslEnv
+{
+  TTLSKeyRingParms
+  {
+    Keyring          DBD1RING
+  }
+  TTLSEnvironmentAdvancedParms
+  {
+    SSLV2 OFF
+    SSLV3 OFF
+    TLSV1 OFF
+    TLSV1.1 OFF
+    TLSV1.2 ON
+    TLSV1.3 OFF
+    ClientAuthType PassThru
+  }
+  HandShakeRole         Server
+  TTLSCipherParmsRef    Db2SslCipherParms
+}
+TTLSCipherParms Db2SslCipherParms
+{
+  V3CipherSuites     TLS_RSA_WITH_AES_128_GCM_SHA256
+  V3CipherSuites     TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+  V3CipherSuites     TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+  V3CipherSuites     TLS_RSA_WITH_AES_128_CBC_SHA
+}
+TTLSCipherParms              StunnelParms
+{
+  V3CipherSuites4Char       C02FC030
+}
+TTLSGroupAction  StunnelGroup
+{
+  TTLSEnabled                       On
+}
+TTLSRule StunnelDWP1Sim148
+{
+  REMOTEPORTRANGE                   1-20000
+  RemoteAddr                        0.0.0.0/0
+  Direction                         Outbound
+  TTLSGroupActionRef                StunnelGroup
+  TTLSEnvironmentActionRef          StunnelClientEnvironment
+}
+TTLSEnvironmentAction        StunnelClientEnvironment
+{
+  TTLSKeyRingParms
+  {
+    Keyring                       STCDB2/DBD1RING
+  }
+  TTLSEnvironmentAdvancedParms
+  {
+    SSLv2 Off
+    SSLv3 Off
+    TLSv1 Off
+    TLSv1.1 Off
+    TLSv1.2 On
+    TLSv1.3 Off
+    ClientAuthType PassThru
+    CLIENTHANDSHAKESNI REQUIRED
+    CLIENTHANDSHAKESNIMATCH OPTIONAL
+    CLIENTHANDSHAKESNILIST dg1.{{ cluster_domain.stdout }}
+  }
+  HandshakeRole                     CLIENT
+  TTLSCipherParmsRef                StunnelParms
+  Trace                             255
+}

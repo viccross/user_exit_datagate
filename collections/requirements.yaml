@@ -2,4 +2,4 @@
 collections:
   - name: community.general
   - name: ibm.ibm_zos_core
-    version: 1.9.3
+    version: 1.8.0
