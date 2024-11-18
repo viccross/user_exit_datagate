@@ -162,7 +162,7 @@
     - name: Update PAGENT config file
       ibm.ibm_zos_core.zos_lineinfile:
         src: TCPIP.TCPPARMS(PAGCONF)
-        regexp: /^TTLSConfig /
+        regexp: '^TTLSConfig  '
         line: TTLSConfig       /etc/pagent/pagttls.conf
         backup: true
         backup_name: TCPIP.TCPPARMS(PAGCONF9)
