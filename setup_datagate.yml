@@ -172,3 +172,11 @@
       ibm.ibm_zos_core.zos_operator:
         cmd: "F PAGENT,REFRESH"
         wait_time_s: 10
+
+    - name: Get the current ATTLS policy
+      shell:
+        cmd: pasearch -t
+      register: result
+    - name: Output the result (if it didn't already)
+      debug:
+        msg: "{{ result.stdout }}"
