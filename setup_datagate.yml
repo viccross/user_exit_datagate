@@ -71,7 +71,7 @@
     - name: Issue stop command for DBD1
       ibm.ibm_zos_core.zos_operator:
         cmd: "-DBD1 STOP DB2"
-        wait_time_s: 300       
+        wait_time_s: 90       
 
     - name: Issue start command for DBD1
       ibm.ibm_zos_core.zos_operator:
