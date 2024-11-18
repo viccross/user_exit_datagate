@@ -114,7 +114,7 @@
 //SYSIN    DD  * 
   CREATE DATABASE DSNACCEL 
          CCSID UNICODE; 
-                                         
+
   CREATE TABLESPACE SYSTSACC IN DSNACCEL 
          DSSIZE 64G 
          SEGSIZE 32 
@@ -125,7 +125,7 @@
          BUFFERPOOL BP0 
          CLOSE NO 
          CCSID UNICODE; 
-                                         
+
   CREATE TABLESPACE SYSTSACT IN DSNACCEL 
          DSSIZE 64G 
          SEGSIZE 32 
@@ -136,7 +136,7 @@
          BUFFERPOOL BP0 
          CLOSE NO 
          CCSID UNICODE; 
-                                         
+
   CREATE TABLESPACE SYSTSACP IN DSNACCEL 
          DSSIZE 64G 
          SEGSIZE 32 
@@ -162,7 +162,7 @@
   CREATE TABLE "SYSACCEL"."SYSACCELERATORS" 
          ( "ACCELERATORNAME"    VARCHAR(128) NOT NULL 
          , "LOCATION"           VARCHAR(128) 
-         , "ACCELERATORSRL"     CHAR(64) FOR BIT DATA DEFAULT NULL
+         , "ACCELERATORSRL"     CHAR(64) FOR BIT DATA DEFAULT NULL 
          , "ACCELERATOR_TYPE"   SMALLINT NOT NULL WITH DEFAULT  1 
          ) 
          IN DSNACCEL.SYSTSACC 
@@ -175,7 +175,7 @@
          FREEPAGE 0 PCTFREE 10 
          CLUSTER BUFFERPOOL BP0 
          CLOSE NO; 
-                                                                  
+
   CREATE TABLE "SYSACCEL"."SYSACCELERATEDTABLES" 
          ( "NAME"            VARCHAR(128)  NOT NULL 
          , "CREATOR"         VARCHAR(128)  NOT NULL 
@@ -184,17 +184,17 @@
          , "REMOTECREATOR"   VARCHAR(128)  NOT NULL 
          , "ENABLE"          CHAR(1)       NOT NULL 
          , "CREATEDBY"       VARCHAR(128)  NOT NULL 
-         , "CREATEDTS"       TIMESTAMP     NOT NULL WITH DEFAULT
-         , "ALTEREDTS"       TIMESTAMP     NOT NULL WITH DEFAULT
-         , "REFRESH_TIME"    TIMESTAMP     NOT NULL WITH DEFAULT
-         , "SUPPORTLEVEL"    SMALLINT      NOT NULL WITH DEFAULT
-         , "ARCHIVE"         CHAR(1)       NOT NULL WITH DEFAULT
-         , "REMOTELOCATION"  VARCHAR(128)  NOT NULL WITH DEFAULT
-         , "FEATURE"         INTEGER       NOT NULL WITH DEFAULT
+         , "CREATEDTS"       TIMESTAMP     NOT NULL WITH DEFAULT 
+         , "ALTEREDTS"       TIMESTAMP     NOT NULL WITH DEFAULT 
+         , "REFRESH_TIME"    TIMESTAMP     NOT NULL WITH DEFAULT 
+         , "SUPPORTLEVEL"    SMALLINT      NOT NULL WITH DEFAULT 
+         , "ARCHIVE"         CHAR(1)       NOT NULL WITH DEFAULT 
+         , "REMOTELOCATION"  VARCHAR(128)  NOT NULL WITH DEFAULT 
+         , "FEATURE"         INTEGER       NOT NULL WITH DEFAULT 
          ) 
          IN DSNACCEL.SYSTSACT 
          CCSID UNICODE; 
-                                                                
+
   CREATE UNIQUE INDEX "SYSACCEL"."DSNACT01" 
          ON "SYSACCEL"."SYSACCELERATEDTABLES" 
          ( "CREATOR"          ASC 
@@ -205,18 +205,18 @@
          FREEPAGE 0 PCTFREE 10 
          CLUSTER BUFFERPOOL BP0 
          CLOSE NO; 
-                                                                
+
   CREATE TABLE "SYSACCEL"."SYSACCELERATEDPACKAGES" 
-         ( "LOCATION"        VARCHAR(128)  NOT NULL WITH DEFAULT
-         , "COLLID"          VARCHAR(128)  NOT NULL WITH DEFAULT
-         , "NAME"            VARCHAR(128)  NOT NULL WITH DEFAULT
+         ( "LOCATION"        VARCHAR(128)  NOT NULL WITH DEFAULT 
+         , "COLLID"          VARCHAR(128)  NOT NULL WITH DEFAULT 
+         , "NAME"            VARCHAR(128)  NOT NULL WITH DEFAULT 
          , "CONTOKEN"        CHAR(8)       FOR BIT DATA 
-                                           NOT NULL WITH DEFAULT
-         , "VERSION"         VARCHAR(122)  NOT NULL WITH DEFAULT
-         , "OWNER"           VARCHAR(128)  NOT NULL WITH DEFAULT
-         , "CREATOR"         VARCHAR(128)  NOT NULL WITH DEFAULT
-         , "TIMESTAMP"       TIMESTAMP     NOT NULL WITH DEFAULT
-         , "BINDTIME"        TIMESTAMP     NOT NULL WITH DEFAULT
+                                           NOT NULL WITH DEFAULT 
+         , "VERSION"         VARCHAR(122)  NOT NULL WITH DEFAULT 
+         , "OWNER"           VARCHAR(128)  NOT NULL WITH DEFAULT 
+         , "CREATOR"         VARCHAR(128)  NOT NULL WITH DEFAULT 
+         , "TIMESTAMP"       TIMESTAMP     NOT NULL WITH DEFAULT 
+         , "BINDTIME"        TIMESTAMP     NOT NULL WITH DEFAULT 
          , "RELBOUND"        CHAR(1)       NOT NULL WITH DEFAULT 
          , "TYPE"            CHAR(1)       NOT NULL WITH DEFAULT 
          , "COPYID"          INTEGER       NOT NULL WITH DEFAULT 
@@ -224,7 +224,7 @@
          , "GETACCELARCHIVE" CHAR(1)       NOT NULL WITH DEFAULT 
          , "ACCELERATOR"     VARCHAR(128)  NOT NULL WITH DEFAULT 
          , "ACCELERATION_WAITFORDATA" DECIMAL(5, 1) 
-                                           NOT NULL WITH DEFAULT -1.0
+                                           NOT NULL WITH DEFAULT -1.0 
          ,  PRIMARY KEY 
               ( "LOCATION" 
               , "COLLID" 
@@ -234,7 +234,7 @@
          ) 
          IN DSNACCEL.SYSTSACP 
          CCSID UNICODE; 
-                                                                     
+
   CREATE UNIQUE INDEX "SYSACCEL"."DSNACP01" 
          ON "SYSACCEL"."SYSACCELERATEDPACKAGES" 
          ( "LOCATION"        ASC 
@@ -252,7 +252,7 @@
          COMPRESS NO 
          BUFFERPOOL BP0 
          CLOSE NO; 
-                                                                     
+
   CREATE UNIQUE INDEX "SYSACCEL"."DSNACP02" 
          ON "SYSACCEL"."SYSACCELERATEDPACKAGES" 
          ( "LOCATION"        ASC 
@@ -270,7 +270,7 @@
          COMPRESS NO 
          BUFFERPOOL BP0 
          CLOSE NO; 
-                                                                
+
   CREATE TABLE "SYSACCEL"."SYSACCELERATEDTABLESAUTH" 
          ( "ACCELERATORNAME" VARCHAR(128)  NOT NULL 
          , "GRANTOR"         VARCHAR(128)  NOT NULL 
@@ -289,7 +289,7 @@
          ) 
          IN DSNACCEL.SYSTSATA 
          CCSID UNICODE; 
-                                                                
+
   CREATE UNIQUE INDEX "SYSACCEL"."DSNATA01" 
          ON "SYSACCEL"."SYSACCELERATEDTABLESAUTH" 
          ( "TCREATOR"         ASC 
@@ -372,38 +372,5 @@
 //* Now drop the DSNACCEL database containing all SYSACCEL objects: 
 //*   DROP DATABASE DSNACCEL; 
 //* WARNING: 
-//* REPAIR DBD DROP DATABASE should not be used to drop these tables. 
-//********************************************************************* 
-//DSNTICR EXEC PGM=IKJEFT01,DYNAMNBR=20,COND=(4,LT) 
-//SYSTSPRT DD  SYSOUT=* 
-//SYSPRINT DD  SYSOUT=* 
-//SYSUDUMP DD  SYSOUT=* 
-//SYSTSIN  DD  * 
-       DSN SYSTEM(DBD1) 
-       RUN PROGRAM(DSNTIAD) PLAN(DSNTIA13) - 
-       LIB('DBD1.RUNLIB.LOAD') 
-       END 
-//SYSIN    DD  * 
- grant monitor2 to ibmuser; 
- GRANT EXECUTE ON FUNCTION DSNAQT.* TO IBMUSER; 
- GRANT EXECUTE ON PROCEDURE SYSPROC.* TO IBMUSER; 
- GRANT EXECUTE ON PACKAGE SYSACCEL.* TO IBMUSER; 
- GRANT EXECUTE ON PACKAGE SYSACCEL.AQTSFACT TO IBMUSER; 
- GRANT MONITOR1 TO IBMUSER; 
- GRANT TRACE TO IBMUSER; 
- GRANT DISPLAY TO IBMUSER; 
- GRANT SYSOPR TO IBMUSER; 
- GRANT SELECT ON SYSIBM.SYSCOLUMNS TO IBMUSER; 
- GRANT SELECT ON SYSIBM.SYSCONTROLS TO IBMUSER; 
- GRANT SELECT ON SYSIBM.SYSDATABASE TO IBMUSER; 
- GRANT SELECT ON SYSIBM.SYSDUMMY1 TO IBMUSER; 
- GRANT SELECT ON SYSIBM.SYSINDEXES TO IBMUSER; 
- GRANT SELECT ON SYSIBM.SYSRELS TO IBMUSER; 
- GRANT SELECT ON SYSIBM.SYSTABLEPART TO IBMUSER; 
- GRANT SELECT ON SYSIBM.SYSTABLES TO IBMUSER; 
- GRANT SELECT ON SYSIBM.SYSVIEWS TO IBMUSER; 
- GRANT SELECT ON SYSIBM.SYSTABLES TO IBMUSER; 
- GRANT SELECT ON SYSIBM.SYSCOLUMNS TO IBMUSER; 
- GRANT SELECT ON SYSIBM.SYSDUMMY1 TO IBMUSER; 
- GRANT SELECT ON DSNAQT.ACCEL_NAMES TO IBMUSER;
-/* 
+//* REPAIR DBD DROP DATABASE should not be used to drop these tables.
+//*********************************************************************

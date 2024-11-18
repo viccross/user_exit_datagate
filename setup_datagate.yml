@@ -99,15 +99,20 @@
         wait_time_s: 30
       register: response
 
-    - name: Submit the $4STPROC job
+    - name: Submit the $5STPROC job
       ibm.ibm_zos_core.zos_job_submit:
-        src: files/$4STPROC.jcl
+        src: files/$5STPROC.jcl
+        location: LOCAL
+        wait_time_s: 30
+        max_rc: 4
+      register: result
+
+    - name: Submit the $6STPROC job
+      ibm.ibm_zos_core.zos_job_submit:
+        src: files/$6STPROC.jcl
         location: LOCAL
         wait_time_s: 30
       register: result
-      until: "result is not failed"
-      retries: 2
-      delay: 3
 
     - name: Fetch existing PAGENT config file
       ibm.ibm_zos_core.zos_copy:
