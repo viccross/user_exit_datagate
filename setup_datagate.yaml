@@ -29,6 +29,11 @@
       shell:
         cmd: oc describe ingresscontroller default -n openshift-ingress-operator | grep domain | awk '{print $2;}' | tee {{ playbook_dir }}/cluster_domain.txt
       register: cluster_domain
+    
+    - name: Create the PVC for Data Gate
+      shell:
+        cmd: oc apply -f {{ playbook_dir }}/files/pvc_create.yaml
+      register: pvc_result
 
 - name: Setup the Data Gate parameters on z/OS
   hosts: zos

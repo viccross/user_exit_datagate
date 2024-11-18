@@ -15,3 +15,4 @@ echo "      ansible_host: ${zos_ip}" >> inventory.yaml
 echo "      ansible_user: ibmuser" >> inventory.yaml
 
 echo "Ansible inventory updated."
+exit 0
