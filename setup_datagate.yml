@@ -162,9 +162,8 @@
     - name: Modify conflicting TTLS rule
       ibm.ibm_zos_core.zos_lineinfile:
         src: /etc/pagent/pagttls.conf
-        regexp: '^(.*)LocalPortRange 8101-8102(.*)$'
-        line: \1LocalPortRange 8111-8112\2
-        backrefs: true
+        regexp: '^.*LocalPortRange.*8101-8102.*$'
+        line: '    LocalPortRange 8111-8112'
 
     - name: Update PAGENT config file
       ibm.ibm_zos_core.zos_lineinfile:
