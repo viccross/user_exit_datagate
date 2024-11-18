@@ -15,6 +15,11 @@
       retries: 10
       until: "result is not failed"
 
+    - name: Ensure .kube directory exists
+      file:
+        path: /root/.kube
+        state: directory
+
     - name: Extract kubeconfig from facts
       copy:
         content: "{{ cluster_kubeconfig }}"
