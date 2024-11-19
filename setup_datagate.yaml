@@ -192,7 +192,7 @@
   gather_facts: true
   tasks:
 
-    - name: Do a big pause
+    - name: Do a big pause, 1337-style
       block:
         - name: Do a little pause, repeatedly
           shell: /bin/false
@@ -209,10 +209,10 @@
         cmd: oc apply -f {{ playbook_dir }}/files/pvc_create.yaml
       register: pvc_result
 
-    - name: Wait for CP4D
+    - name: Wait for CP4D, up to two hours
       shell:
         cmd: oc get pipelinerun -n default
       register: result
-      retries: 20
+      retries: 24
       until: '"Completed" in result.stdout'
       delay: 300
