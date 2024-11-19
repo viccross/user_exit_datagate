@@ -30,11 +30,6 @@
         cmd: oc describe ingresscontroller default -n openshift-ingress-operator | grep domain | awk '{print $2;}' | tee {{ playbook_dir }}/cluster_domain.txt
       register: cluster_domain
     
-    - name: Create the PVC for Data Gate
-      shell:
-        cmd: oc apply -f {{ playbook_dir }}/files/pvc_create.yaml
-      register: pvc_result
-
 - name: Setup the Data Gate parameters on z/OS
   hosts: zos
   gather_facts: false
@@ -191,3 +186,26 @@
     - name: Output the result (if it didn't already)
       debug:
         msg: "{{ result.stdout }}"
+
+- name: Stall for a while for CP4D pipeline
+  hosts: localhost
+  gather_facts: true
+  tasks:
+
+    - name: Do a big pause
+      pause:
+        minutes: 90
+        prompt: Waiting for CP4D to deploy
+
+    - name: Create the PVC for Data Gate
+      shell:
+        cmd: oc apply -f {{ playbook_dir }}/files/pvc_create.yaml
+      register: pvc_result
+
+    - name: Wait for CP4D
+      shell:
+        cmd: oc get pipelinerun -n default
+      register: result
+      retries: 20
+      until: '"Completed" in result.stdout'
+      delay: 300
