@@ -193,9 +193,16 @@
   tasks:
 
     - name: Do a big pause
-      pause:
-        minutes: 90
-        prompt: Waiting for CP4D to deploy
+      block:
+        - name: Do a little pause, repeatedly
+          shell: /bin/false
+          register: result
+          until: 'result.rc == 0'
+          retries: 90
+          delay: 60
+      rescue:
+        - name: Save it
+          shell: /bin/true
 
     - name: Create the PVC for Data Gate
       shell:
