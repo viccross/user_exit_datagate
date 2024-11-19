@@ -31,9 +31,17 @@
       register: cluster_domain
     
     - name: Create the PVC for Data Gate
-      shell:
-        cmd: oc apply -f {{ playbook_dir }}/files/pvc_create.yaml
-      register: pvc_result
+      block:
+        - name: Apply the YAML
+          shell:
+            cmd: oc apply -f {{ playbook_dir }}/files/pvc_create.yaml
+          register: pvc_result
+          until: 'pvc_result is not failed'
+          retries: 10
+          delay: 30
+      rescue:
+        - name: Save it
+          shell: /bin/true
 
 - name: Setup the Data Gate parameters on z/OS
   hosts: zos
