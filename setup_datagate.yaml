@@ -52,7 +52,7 @@
 
     - name: Allocate the user JCL dataset
       ibm.ibm_zos_core.zos_data_set:
-        name: IBMUSER.DATAGATE.JCL
+        name: "{{ item }}"
         type: pds
         space_primary: 50
         space_secondary: 15
@@ -60,6 +60,9 @@
         record_format: fb
         record_length: 80
         block_size: 27920
+      loop:
+        - IBMUSER.DATAGATE.JCL
+        - IBMUSER.DG.HELPER
 
     - name: Submit the $0DBPARM job
       ibm.ibm_zos_core.zos_job_submit:
@@ -194,12 +197,12 @@
 
     - name: Do a big pause, 1337-style
       block:
-        - name: Do a little pause, repeatedly
+        - name: Do a little pause, repeatedly, so that Terraform knows we're still here
           shell: /bin/false
           register: result
           until: 'result.rc == 0'
-          retries: 90
-          delay: 60
+          retries: 45
+          delay: 120
       rescue:
         - name: Save it
           shell: /bin/true
@@ -214,7 +217,7 @@
           retries: 10
           delay: 30
       rescue:
-        - name: Save it
+        - name: Save it, if needed
           shell: /bin/true
 
 
