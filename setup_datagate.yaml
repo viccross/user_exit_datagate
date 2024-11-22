@@ -91,6 +91,11 @@
         src: "{{ playbook_dir }}/files/$2CPCERT.jcl"
         dest: IBMUSER.DATAGATE.JCL($2CPCERT)
 
+    - name: Copy the CLEANUP1 job
+      ibm.ibm_zos_core.zos_copy:
+        src: "{{ playbook_dir }}/files/CLEANUP1.jcl"
+        dest: IBMUSER.DG.HELPER(CLEANUP1)
+
     - name: Copy/replace the DBD1WLMG STC JCL
       ibm.ibm_zos_core.zos_copy:
         src: "{{ playbook_dir }}/files/DBD1WLMG.jcl"
