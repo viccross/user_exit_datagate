@@ -1,0 +1,47 @@
+---
+- name: Find out the name of the Iceberg deployment
+  shell:
+    cmd: oc get deployments -n cpd | grep 'dg-.*-data-gate-iceberg-server' | awk '{print $1}'
+  register: iceberg_deploy
+- name: Dump the Iceberg deployment YAML
+  command: |  
+    oc get deployment -n cpd "{{ iceberg_deploy.stdout }}" -o yaml > /tmp/icebergserver-deployment.yaml
+- name: Update the deployment YAML, parte une
+  blockinfile:
+    path: /tmp/icebergserver-deployment.yaml
+    insertafter: "- args:"
+    block: |
+              - -cp
+              - /opt/ibm/dwa/bin/tundra-iceberg/iceberg-server-2.0.0.jar:/opt/ibm/dwa/libs/tundra-lt-iceberg/hive-iceberg-shading-4.0.0.jar:/opt/ibm/dwa/libs/tundra-lt-iceberg/*
+              - -Dlog4j2.configurationFile=/opt/ibm/dwa/bin/tundra-iceberg/log4j2.xml
+              - com.ibm.iceberg.server.IcebergServer
+    marker_begin: WD5JU8QP
+    marker_end: PQ8UJ5DW
+- name: Remove the blockinfile markers
+  lineinfile:
+    path: /tmp/icebergserver-deployment.yaml
+    regexp: "{{ item }}"
+    state: absent
+  loop:
+    - WD5JU8QP
+    - PQ8UJ5DW
+- name: Update the deployment YAML, parte deux
+  blockinfile:
+    path: /tmp/icebergserver-deployment.yaml
+    insertafter: "- ca.crt"
+    block: |
+              command:
+              - java
+    marker_begin: WD5JU8QP
+    marker_end: PQ8UJ5DW
+- name: Remove the blockinfile markers
+  lineinfile:
+    path: /tmp/icebergserver-deployment.yaml
+    regexp: "{{ item }}"
+    state: absent
+  loop:
+    - WD5JU8QP
+    - PQ8UJ5DW
+- name: Apply the change
+  shell:
+    cmd: oc apply -f icebergserver-deployment.yaml -n cpd
