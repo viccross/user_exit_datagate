@@ -41,7 +41,7 @@
 
 - name: Report the WXD instance response
   debug:
-    msg: WXD_INSTANCE_RESPONSE={{ wxd_instance_response.json }}"
+    msg: WXD_INSTANCE_RESPONSE={{ wxd_instance_response.json }}
 
 - name: Set the WXD instance id var
   set_fact:
@@ -80,20 +80,20 @@
       pre_existing_owner: false
       create_arguments:
         resources:
-          cpu: 3
-          memory: 12
+          cpu: "3"
+          memory: "12"
         metadata:
           images_ui_limit_cpu: 100m
           images_apply_request_cpu: 1000m
           targetDbEncoding: UNICODE
-          tundra_arrow_memory_limit_datagate_cdc_agent_watsonx: 250000000
+          tundra_arrow_memory_limit_datagate_cdc_agent_watsonx: "250000000"
           pod_affinity: false
           images_server_request_cpu: 1000m
           targetDbInstance: watsonx.data-{{ wxd_instance_id }}
           images_server_request_memory: 3Gi
           is_production_instance: false
           target_type: watsonx.data
-          cpu: 3
+          cpu: "3"
           storage_existingClaim_name: "{{ pvc_name }}"
           images_apply_request_memory: 6.25Gi
           baseNamespace: "{{ namespace }}"
@@ -105,21 +105,21 @@
           images_stunnel_request_cpu: 300m
           licenseAgreementTimestamp: "{{ now(utc=true,fmt='%Y-%m-%dT%H:%M:%S.%3fZ') }}"
           enable_resource_validation: false
-          databaseSecureJdbcPort: 1234
+          databaseSecureJdbcPort: "1234"
           images_server_limit_cpu: 1000m
           data_gate_database_name: "{{ cos_bucket }}"
           bucket_id: "{{ cos_bucket }}"
           images_ui_request_cpu: 100m
           dataGateInstanceName: "{{ instance_name }}"
-          mem: 12
+          mem: "12"
           arch: amd64
-          tundra_arrow_memory_limit_datagate_apply: 2400000000
+          tundra_arrow_memory_limit_datagate_apply: "2400000000"
           route_data_gate_route_host_name: "{{ host_prefix }}.{{ cluster_host }}"
           databaseEngineService: "{{ cos_bucket }}"
           version: "{{ version }}"
           images_api_limit_cpu: 300m
           images_stunnel_limit_cpu: 300m
-          tundra_arrow_memory_limit_datagate_server: 2400000000
+          tundra_arrow_memory_limit_datagate_server: "2400000000"
           images_server_limit_memory: 3Gi
           type: dg
           defaultRouteSubdomain: "{{ cluster_host }}"
@@ -129,6 +129,7 @@
           images_iceberg_server_request_cpu: 300m
           storage_storageclass_size: 50Gi
     method: POST
+    status_code: [200, 202]
   register: instance_creation_response
 
 - name: Report instance creation
