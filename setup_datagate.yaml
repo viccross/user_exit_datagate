@@ -266,4 +266,4 @@
 
     - name: Patch the Iceberg deployment
       include_tasks:
-        file: datagate_patch.yml
+        file: files/datagate_patch.yml
