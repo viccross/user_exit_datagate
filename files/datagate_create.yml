@@ -1,0 +1,170 @@
+---
+- name: Get the cluster host
+  shell:
+    cmd: oc get routes -n cpd | grep -i common-web-ui | awk '{print $2}' | awk -F'.' '{print $2"."$3".containers.appdomain.cloud"}'
+  register: cluster_host_out
+
+- name: Set the cluster_host var
+  set_fact:
+    cluster_host: "{{ cluster_host_out.stdout }}"
+
+- name: Log on to CPD
+  uri:
+    url: https://cpd-{{ namespace }}.{{ cluster_host }}/icp4d-api/v1/authorize
+    headers:
+      Cache-Control: no-cache
+      Content-Type: application/json
+    body_format: json
+    body:
+      username: "{{ cpd_user }}"
+      password: "{{ cpd_password }}"
+    method: POST
+  register: cpd_login_out
+
+- name: Set the cpd_token var, or exit
+  block:
+    - name: Set the token fact
+      set_fact:
+        cpd_token: "{{ cpd_login_out.json.token }}"
+  rescue:
+    - name: Fail
+      fail:
+        msg: Error loggin in. Exiting.
+
+- name: Get WXD instance response
+  uri:
+    url: https://cpd-{{ namespace }}.{{ cluster_host }}/zen-data/v3/service_instances?fetch_all_instances=true&addon_type=watsonx-data    
+    headers:
+      Accept: application/json
+      Authorization: Bearer {{ cpd_token }}
+  register: wxd_instance_response
+
+- name: Report the WXD instance response
+  debug:
+    msg: WXD_INSTANCE_RESPONSE={{ wxd_instance_response.json }}"
+
+- name: Set the WXD instance id var
+  set_fact:
+    wxd_instance_id: "{{ wxd_instance_response.json.service_instances[0].id }}"
+
+- name: Get supported DG addons version
+  uri:
+    url: https://cpd-{{ namespace }}.{{ cluster_host }}/zen-data-ui/v1/addOn/query
+    headers:
+      Authorization: Bearer {{ cpd_token }}
+      Accept: application/json
+      Content-Type: application/json
+    body_format: json
+    body:
+      type: dg
+    method: POST
+  register: supported_dg_addons_version_out
+
+- name: Set supported DG addons version var
+  set_fact:
+    supported_dg_addons_version: "{{ supported_dg_addons_version_out.json.requestObj[0].Version }}"
+
+- name: Create DG instance
+  uri:
+    url: https://cpd-{{ namespace }}.{{ cluster_host }}/zen-data/v3/service_instances
+    headers:
+      Authorization: Bearer {{ cpd_token }}
+      Accept: application/json
+      Content-Type: application/json
+    body_format: json
+    body:
+      addon_type: dg
+      addon_version: "{{ version }}"
+      display_name: "{{ instance_name }}"
+      namespace: "{{ namespace }}"
+      pre_existing_owner: false
+      create_arguments:
+        resources:
+          cpu: 3
+          memory: 12
+        metadata:
+          images_ui_limit_cpu: 100m
+          images_apply_request_cpu: 1000m
+          targetDbEncoding: UNICODE
+          tundra_arrow_memory_limit_datagate_cdc_agent_watsonx: 250000000
+          pod_affinity: false
+          images_server_request_cpu: 1000m
+          targetDbInstance: watsonx.data-{{ wxd_instance_id }}
+          images_server_request_memory: 3Gi
+          is_production_instance: false
+          target_type: watsonx.data
+          cpu: 3
+          storage_existingClaim_name: "{{ pvc_name }}"
+          images_apply_request_memory: 6.25Gi
+          baseNamespace: "{{ namespace }}"
+          name: IBM Data Gate for watsonx Non-production
+          images_iceberg_server_limit_cpu: 300m
+          images_api_request_cpu: 300m
+          route_data_gate_route_port: "{{ route_port }}"
+          images_apply_limit_cpu: 1000m
+          images_stunnel_request_cpu: 300m
+          licenseAgreementTimestamp: "{{ now(utc=true,fmt='%Y-%m-%dT%H:%M:%S.%3fZ') }}"
+          enable_resource_validation: false
+          databaseSecureJdbcPort: 1234
+          images_server_limit_cpu: 1000m
+          data_gate_database_name: "{{ cos_bucket }}"
+          bucket_id: "{{ cos_bucket }}"
+          images_ui_request_cpu: 100m
+          dataGateInstanceName: "{{ instance_name }}"
+          mem: 12
+          arch: amd64
+          tundra_arrow_memory_limit_datagate_apply: 2400000000
+          route_data_gate_route_host_name: "{{ host_prefix }}.{{ cluster_host }}"
+          databaseEngineService: "{{ cos_bucket }}"
+          version: "{{ version }}"
+          images_api_limit_cpu: 300m
+          images_stunnel_limit_cpu: 300m
+          tundra_arrow_memory_limit_datagate_server: 2400000000
+          images_server_limit_memory: 3Gi
+          type: dg
+          defaultRouteSubdomain: "{{ cluster_host }}"
+          images_apply_limit_memory: 6.25Gi
+          source_type: db2z
+          storage_type: existingClaim
+          images_iceberg_server_request_cpu: 300m
+          storage_storageclass_size: 50Gi
+    method: POST
+  register: instance_creation_response
+
+- name: Report instance creation
+  debug:
+    msg: INSTANCE_CREATION_RESPONSE={{ instance_creation_response.json }}
+
+- name: Report instance ID
+  block:
+    - name: Set the instance_id fact
+      set_fact:
+        instance_id: "{{ instance_creation_response.json.id }}"
+  rescue:
+    - name: Fail
+      fail:
+        msg: Error creating a CR. Exiting.
+
+- name: Create CM
+  shell:
+    cmd: |
+      oc create cm "dg-{{ instance_id }}-configuration-cm" -n "{{ namespace }}" \
+        --from-literal "s3_bucket_name={{ cos_bucket }}" \
+        --from-literal "s3_endpoint={{ bucket_endpoint }}" \
+        --from-literal "s3_region={{ cos_region }}"
+
+- name: Create config secret
+  shell:
+    cmd: |
+      oc create secret generic "dg-{{ instance_id }}-configuration-secret" -n "$NAMESPACE" \
+        --from-literal "aws_access_key={{ cos_access_key_id }} \
+        --from-literal "aws_secret_key={{ cos_secret_access_key }}"
+
+- name: Rest for a bit
+  pause:
+    seconds: 180
+
+- name: Patch for maintenance
+  shell:
+    cmd: |
+      oc patch datagateinstanceservices dg{{ instance_id }} -n cpd --type='merge' -p='{"spec": {"ignoreForMaintenance": true}}'

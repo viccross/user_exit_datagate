@@ -238,19 +238,32 @@
         cmd: oc get secret platform-auth-idp-credentials -n cpd -ojsonpath='{.data.admin_password}' | base64 -d
       register: cpd_admin_pass
 
-    - name: Run script to deploy DG instance
-      script:
-        cmd: files/datagate_create.sh
-      environment:
-        BUCKETID: "{{ cos_bucket }}"
-        BUCKETRGN: "{{ cos_region }}"
-        PVC_NAME: datagate-pvc
-        SECRET_KEY: "{{ cos_secret_access_key }}"
-        ACCESS_KEY: "{{ cos_access_key_id }}"
-        CPD_USER: cpadmin
-        CPD_PASSWORD: "{{ cpd_admin_pass.stdout }}"
+#    - name: Run script to deploy DG instance
+#      script:
+#        cmd: files/datagate_create.sh
+#      environment:
+#        BUCKETID: "{{ cos_bucket }}"
+#        BUCKETRGN: "{{ cos_region }}"
+#        PVC_NAME: datagate-pvc
+#        SECRET_KEY: "{{ cos_secret_access_key }}"
+#        ACCESS_KEY: "{{ cos_access_key_id }}"
+#        CPD_USER: cpadmin
+#        CPD_PASSWORD: "{{ cpd_admin_pass.stdout }}"
+
+    - name: Run a task to deploy DG instance
+      include_tasks:
+        file: files/datagate_create.yml
+      vars:
+        cpd_user: cpadmin
+        cpd_password: "{{ cpd_admin_pass.stdout }}"
+        version: "6.3.0"
+        pvc_name: datagate-pvc
+        instance_name: dg1
+        namespace: cpd
+        route_port: "443"
+        bucket_endpoint: https://s3.{{ cos_region }}.cloud-object-storage.appdomain.cloud
+        host_prefix: dg1
 
     - name: Patch the Iceberg deployment
       include_tasks:
         file: datagate_patch.yml
-        
