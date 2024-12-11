@@ -1,4 +1,12 @@
 ---
+- name: Wait until pods are ready
+  shell:
+    cmd: oc get pods -n cpd | grep -e "^dg-{{ instance_id }}-data-gate-.*-.*\s*" | grep -v iceberg
+  register: result
+  retries: 30
+  until: '"4/4" in result.stdout'
+  delay: 60
+
 - name: Find out the name of the Iceberg deployment
   shell:
     cmd: oc get deployments -n cpd | grep 'dg-.*-data-gate-iceberg-server' | awk '{print $1}'
@@ -6,11 +14,12 @@
 - name: Dump the Iceberg deployment YAML
   command: |  
     oc get deployment -n cpd "{{ iceberg_deploy.stdout }}" -o yaml > /tmp/icebergserver-deployment.yaml
+
 - name: Update the deployment YAML, parte une
   blockinfile:
     path: /tmp/icebergserver-deployment.yaml
     insertafter: "- args:"
-    block: |
+    block: |2
               - -cp
               - /opt/ibm/dwa/bin/tundra-iceberg/iceberg-server-2.0.0.jar:/opt/ibm/dwa/libs/tundra-lt-iceberg/hive-iceberg-shading-4.0.0.jar:/opt/ibm/dwa/libs/tundra-lt-iceberg/*
               - -Dlog4j2.configurationFile=/opt/ibm/dwa/bin/tundra-iceberg/log4j2.xml
@@ -25,11 +34,12 @@
   loop:
     - WD5JU8QP
     - PQ8UJ5DW
+
 - name: Update the deployment YAML, parte deux
   blockinfile:
     path: /tmp/icebergserver-deployment.yaml
     insertafter: "- ca.crt"
-    block: |
+    block: |2
               command:
               - java
     marker_begin: WD5JU8QP
@@ -42,6 +52,12 @@
   loop:
     - WD5JU8QP
     - PQ8UJ5DW
+
 - name: Apply the change
   shell:
     cmd: oc apply -f icebergserver-deployment.yaml -n cpd
+
+- name: Clean up the temp file
+  file:
+    path: /tmp/icebergserver-deployment.yaml
+    state: absent
