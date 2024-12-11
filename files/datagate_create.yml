@@ -149,7 +149,7 @@
 - name: Create CM
   shell:
     cmd: |
-      oc create cm "dg-{{ instance_id }}-configuration-cm" -n "{{ namespace }}" \
+      oc create cm dg-{{ instance_id }}-configuration-cm -n {{ namespace }} \
         --from-literal "s3_bucket_name={{ cos_bucket }}" \
         --from-literal "s3_endpoint={{ bucket_endpoint }}" \
         --from-literal "s3_region={{ cos_region }}"
@@ -157,13 +157,17 @@
 - name: Create config secret
   shell:
     cmd: |
-      oc create secret generic "dg-{{ instance_id }}-configuration-secret" -n "$NAMESPACE" \
-        --from-literal "aws_access_key={{ cos_access_key_id }} \
+      oc create secret generic dg-{{ instance_id }}-configuration-secret -n {{ namespace }} \
+        --from-literal "aws_access_key={{ cos_access_key_id }}" \
         --from-literal "aws_secret_key={{ cos_secret_access_key }}"
 
-- name: Rest for a bit
-  pause:
-    seconds: 180
+- name: Wait until instance is ready to patch
+  shell:
+    cmd: oc get datagateinstanceservices -n {{ namespace }}
+  register: result
+  retries: 30
+  until: '"Completed" in result.stdout'
+  delay: 60
 
 - name: Patch for maintenance
   shell:
