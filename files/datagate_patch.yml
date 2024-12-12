@@ -12,8 +12,9 @@
     cmd: oc get deployments -n cpd | grep 'dg-.*-data-gate-iceberg-server' | awk '{print $1}'
   register: iceberg_deploy
 - name: Dump the Iceberg deployment YAML
-  command: |  
-    oc get deployment -n cpd "{{ iceberg_deploy.stdout }}" -o yaml > /tmp/icebergserver-deployment.yaml
+  shell:
+    cmd: |  
+      oc get deployment -n cpd "{{ iceberg_deploy.stdout }}" -o yaml > /tmp/icebergserver-deployment.yaml
 
 - name: Update the deployment YAML, parte une
   blockinfile:
@@ -55,7 +56,7 @@
 
 - name: Apply the change
   shell:
-    cmd: oc apply -f icebergserver-deployment.yaml -n cpd
+    cmd: oc apply -f /tmp/icebergserver-deployment.yaml -n cpd
 
 - name: Clean up the temp file
   file:
