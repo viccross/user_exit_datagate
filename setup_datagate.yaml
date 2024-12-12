@@ -238,18 +238,6 @@
         cmd: oc get secret platform-auth-idp-credentials -n cpd -ojsonpath='{.data.admin_password}' | base64 -d
       register: cpd_admin_pass
 
-#    - name: Run script to deploy DG instance
-#      script:
-#        cmd: files/datagate_create.sh
-#      environment:
-#        BUCKETID: "{{ cos_bucket }}"
-#        BUCKETRGN: "{{ cos_region }}"
-#        PVC_NAME: datagate-pvc
-#        SECRET_KEY: "{{ cos_secret_access_key }}"
-#        ACCESS_KEY: "{{ cos_access_key_id }}"
-#        CPD_USER: cpadmin
-#        CPD_PASSWORD: "{{ cpd_admin_pass.stdout }}"
-
     - name: Run a task to deploy DG instance
       include_tasks:
         file: files/datagate_create.yml
