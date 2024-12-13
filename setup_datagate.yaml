@@ -81,15 +81,15 @@
         cmd: "-DBD1 START DB2"
         wait_time_s: 10       
 
-    - name: Copy the $1GENCER job
+    - name: Copy the DATAGATE.JCL jobs
       ibm.ibm_zos_core.zos_copy:
-        src: "{{ playbook_dir }}/files/$1GENCER.jcl"
-        dest: IBMUSER.DATAGATE.JCL($1GENCER)
-
-    - name: Copy the $2CPCERT job
-      ibm.ibm_zos_core.zos_copy:
-        src: "{{ playbook_dir }}/files/$2CPCERT.jcl"
-        dest: IBMUSER.DATAGATE.JCL($2CPCERT)
+        src: "{{ playbook_dir }}/files/{{ item }}.jcl"
+        dest: IBMUSER.DATAGATE.JCL({{ item }})
+      loop:
+        - $1GENCER
+        - $2CPCERT
+        - DELETEDA
+        - INSERTDA
 
     - name: Copy the CLEANUP1 job
       ibm.ibm_zos_core.zos_copy:
@@ -225,7 +225,6 @@
         - name: Save it, if needed
           shell: /bin/true
 
-
     - name: Wait for CP4D, up to two hours
       shell:
         cmd: oc get pipelinerun -n default
@@ -233,3 +232,26 @@
       retries: 24
       until: '"Completed" in result.stdout'
       delay: 300
+
+    - name: Fetch the secret
+      shell:
+        cmd: oc get secret platform-auth-idp-credentials -n cpd -ojsonpath='{.data.admin_password}' | base64 -d
+      register: cpd_admin_pass
+
+    - name: Run a task to deploy DG instance
+      include_tasks:
+        file: files/datagate_create.yml
+      vars:
+        cpd_user: cpadmin
+        cpd_password: "{{ cpd_admin_pass.stdout }}"
+        version: "6.3.0"
+        pvc_name: datagate-pvc
+        instance_name: dg1
+        namespace: cpd
+        route_port: "443"
+        bucket_endpoint: https://s3.{{ cos_region }}.cloud-object-storage.appdomain.cloud
+        host_prefix: dg1
+
+    - name: Patch the Iceberg deployment
+      include_tasks:
+        file: files/datagate_patch.yml
