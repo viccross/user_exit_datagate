@@ -21,4 +21,4 @@
     cmd: |  
       oc patch deployment/{{ iceberg_deploy.stdout }} -n cpd -p '{"spec": {"template": {"spec": {"containers": [ {"args": ["-c","java -cp /opt/ibm/dwa/bin/tundra-iceberg/iceberg-server-2.0.0.jar:$(find /opt/ibm/dwa/libs/tundra-lt-iceberg/ -name \"*.jar\" | sort | tr \"\\n\" \":\" | sed \"s/:$//\") -Dlog4j2.configurationFile=/opt/ibm/dwa/bin/tundra-iceberg/log4j2.xml com.ibm.iceberg.server.IcebergServer 8299 tls.crt tls.key ca.crt"],"command": ["/bin/bash"],"name": "data-gate-iceberg-server"}]}}}}'
   register: patch_output
-  failed_when: "patched" not in patch_output.stdout
+  failed_when: '"patched" not in patch_output.stdout'
