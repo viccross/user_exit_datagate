@@ -255,3 +255,14 @@
     - name: Patch the Iceberg deployment
       include_tasks:
         file: files/datagate_patch.yml
+
+    - name: Create the user_exit_text_output.txt file
+      copy:
+        content: |
+          Your Cloud Pak for Data admin console can be found at:
+            https://cpd-cpd.{{ lookup('file', 'cluster_domain.txt') }}
+          Your admin user ID is:
+            cpdadmin
+          The secret/password to log on is:
+            {{ cpd_admin_pass.stdout }}
+        dest: user_exit_text_output.txt
