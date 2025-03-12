@@ -262,7 +262,7 @@
           Your Cloud Pak for Data admin console can be found at:
             https://cpd-cpd.{{ lookup('file', 'cluster_domain.txt') }}
           Your admin user ID is:
-            cpdadmin
+            cpadmin
           The secret/password to log on is:
             {{ cpd_admin_pass.stdout }}
         dest: user_exit_text_output.txt
