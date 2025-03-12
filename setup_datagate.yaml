@@ -212,19 +212,6 @@
         - name: Save it
           shell: /bin/true
 
-    - name: Create the PVC for Data Gate
-      block:
-        - name: Apply the YAML
-          shell:
-            cmd: oc apply -f {{ playbook_dir }}/files/pvc_create.yaml
-          register: pvc_result
-          until: 'pvc_result is not failed'
-          retries: 10
-          delay: 30
-      rescue:
-        - name: Save it, if needed
-          shell: /bin/true
-
     - name: Wait for CP4D, up to two hours
       shell:
         cmd: oc get pipelinerun -n default
@@ -251,10 +238,6 @@
         route_port: "443"
         bucket_endpoint: https://s3.{{ cos_region }}.cloud-object-storage.appdomain.cloud
         host_prefix: dg1
-
-    - name: Patch the Iceberg deployment
-      include_tasks:
-        file: files/datagate_patch.yml
 
     - name: Create the user_exit_text_output.txt file
       copy:
