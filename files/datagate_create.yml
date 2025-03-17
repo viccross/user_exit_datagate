@@ -1,16 +1,15 @@
 ---
-- name: Get the cluster host
-  shell:
-    cmd: oc get routes -n cpd | grep -i common-web-ui | awk '{print $2}' | awk -F'.' '{print $2"."$3".containers.appdomain.cloud"}'
-  register: cluster_host_out
-
 - name: Set the cluster_host var
   set_fact:
-    cluster_host: "{{ cluster_host_out.stdout }}"
+    cluster_host: {{ lookup('file', 'cluster_domain.txt' }}
+
+- name: Set the cp4d_route var
+  set_fact:
+    cp4d_route: cpd-{{ namespace }}.{{ cluster_host }}
 
 - name: Log on to CPD
   uri:
-    url: https://cpd-{{ namespace }}.{{ cluster_host }}/icp4d-api/v1/authorize
+    url: https://{{ cp4d_route }}/icp4d-api/v1/authorize
     headers:
       Cache-Control: no-cache
       Content-Type: application/json
@@ -33,7 +32,7 @@
 
 - name: Get WXD instance response
   uri:
-    url: https://cpd-{{ namespace }}.{{ cluster_host }}/zen-data/v3/service_instances?fetch_all_instances=true&addon_type=watsonx-data    
+    url: https://{{ cp4d_route }}/zen-data/v3/service_instances?fetch_all_instances=true&addon_type=watsonx-data    
     headers:
       Accept: application/json
       Authorization: Bearer {{ cpd_token }}
@@ -49,7 +48,7 @@
 
 - name: Get supported DG addons version
   uri:
-    url: https://cpd-{{ namespace }}.{{ cluster_host }}/zen-data-ui/v1/addOn/query
+    url: https://{{ cp4d_route }}/zen-data-ui/v1/addOn/query
     headers:
       Authorization: Bearer {{ cpd_token }}
       Accept: application/json
@@ -66,7 +65,7 @@
 
 - name: Create DG instance
   uri:
-    url: https://cpd-{{ namespace }}.{{ cluster_host }}/zen-data/v3/service_instances
+    url: https://{{ cp4d_route }}/zen-data/v3/service_instances
     headers:
       Authorization: Bearer {{ cpd_token }}
       Accept: application/json
