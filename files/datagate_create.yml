@@ -1,7 +1,7 @@
 ---
 - name: Set the cluster_host var
   set_fact:
-    cluster_host: {{ lookup('file', 'cluster_domain.txt' }}
+    cluster_host: "{{ lookup('file', 'cluster_domain.txt' }}"
 
 - name: Set the cp4d_route var
   set_fact:
