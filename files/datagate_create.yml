@@ -61,7 +61,7 @@
 
 - name: Set supported DG addons version var
   set_fact:
-    supported_dg_addons_version: "{{ supported_dg_addons_version_out.json.requestObj[0].Version }}"
+    version: "{{ supported_dg_addons_version_out.json.requestObj[0].Version }}"
 
 - name: Create DG instance
   uri:
