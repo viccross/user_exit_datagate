@@ -244,7 +244,6 @@
       vars:
         cpd_user: cpadmin
         cpd_password: "{{ cpd_admin_pass.stdout }}"
-        version: "6.3.0"
         pvc_name: datagate-pvc
         instance_name: dg1
         namespace: cpd
@@ -252,6 +251,13 @@
         bucket_endpoint: https://s3.{{ cos_region }}.cloud-object-storage.appdomain.cloud
         host_prefix: dg1
 
-    - name: Patch the Iceberg deployment
-      include_tasks:
-        file: files/datagate_patch.yml
+    - name: Create the user_exit_text_output.txt file
+      copy:
+        content: |
+          Your Cloud Pak for Data admin console can be found at:
+            https://cpd-cpd.{{ lookup('file', 'cluster_domain.txt') }}
+          Your admin user ID is:
+            cpadmin
+          The secret/password to log on is:
+            {{ cpd_admin_pass.stdout }}
+        dest: user_exit_text_output.txt
