@@ -50,6 +50,9 @@
     LANG: "C"
   tasks:
 
+    - name: Set the dg2IPs fact (for use later)
+      set_fact:
+        dg2IPs: "{{ query('community.general.dig', cluster_domain, qtype='A') }}"
     - name: Allocate the user JCL dataset
       ibm.ibm_zos_core.zos_data_set:
         name: "{{ item }}"
