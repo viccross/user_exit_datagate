@@ -50,10 +50,19 @@ TTLSGroupAction  StunnelGroup
 {
   TTLSEnabled                       On
 }
+IpAddrGroup DataGateOCP
+{
+{% for item in dg2IPs %}
+  IpAddr
+  {
+    Addr {{ item }}
+  }
+{% endfor %}
+}
 TTLSRule StunnelDWP1Sim148
 {
-  REMOTEPORTRANGE                   1-20000
-  RemoteAddr                        0.0.0.0/0
+  RemotePortRange                   443
+  RemoteAddrGroupRef                DataGateOCP
   Direction                         Outbound
   TTLSGroupActionRef                StunnelGroup
   TTLSEnvironmentActionRef          StunnelClientEnvironment

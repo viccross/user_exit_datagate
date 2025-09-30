@@ -29,6 +29,14 @@
       shell:
         cmd: oc describe ingresscontroller default -n openshift-ingress-operator | grep domain | awk '{print $2;}' | tee {{ playbook_dir }}/cluster_domain.txt
       register: cluster_domain
+
+    - name: Install dnspython for community.general.dig query
+      dnf:
+        name: python3-dns
+        state: present
+      register: dnfresult
+      retries: 3
+      until: "dnfresult is not failed"
     
 - name: Setup the Data Gate parameters on z/OS
   hosts: zos
@@ -50,6 +58,9 @@
     LANG: "C"
   tasks:
 
+    - name: Set the dg2IPs fact (for use later)
+      set_fact:
+        dg2IPs: "{{ query('community.general.dig', cluster_domain.stdout, qtype='A') }}"
     - name: Allocate the user JCL dataset
       ibm.ibm_zos_core.zos_data_set:
         name: "{{ item }}"
