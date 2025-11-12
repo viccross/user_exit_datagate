@@ -42,7 +42,7 @@
   hosts: zos
   gather_facts: false
   vars:
-    PYZ: "/usr/lpp/IBM/cyp/v3r11/pyz"
+    PYZ: "/usr/lpp/IBM/cyp/v3r13/pyz"
     ZOAU: "/usr/lpp/IBM/zoautil"
     ansible_python_interpreter: "{{ PYZ }}/bin/python3"
     cluster_domain: "{{ hostvars['localhost']['cluster_domain'] }}"
