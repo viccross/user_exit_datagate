@@ -27,7 +27,7 @@
 
     - name: Determine cluster ingress domain
       shell:
-        cmd: oc describe ingresscontroller default -n openshift-ingress-operator | grep domain | awk '{print $2;}' | tee {{ playbook_dir }}/cluster_domain.txt
+        cmd: oc get ingresscontroller default -n openshift-ingress-operator -o json | jq -r '.status.domain' | tee {{ playbook_dir }}/cluster_domain.txt
       register: cluster_domain
 
     - name: Install dnspython for community.general.dig query
