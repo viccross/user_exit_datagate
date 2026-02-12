@@ -80,6 +80,7 @@
         src: files/$0DBPARM.jcl
         location: local
         wait_time_s: 30
+        max_rc: 4
       register: response
 
     - name: Issue stop command for DBD1
@@ -96,6 +97,7 @@
       ibm.ibm_zos_core.zos_copy:
         src: "{{ playbook_dir }}/files/{{ item }}.jcl"
         dest: IBMUSER.DATAGATE.JCL({{ item }})
+        force: true
       loop:
         - $1GENCER
         - $2CPCERT
@@ -106,6 +108,7 @@
       ibm.ibm_zos_core.zos_copy:
         src: "{{ playbook_dir }}/files/CLEANUP1.jcl"
         dest: IBMUSER.DG.HELPER(CLEANUP1)
+        force: true
 
     - name: Copy/replace the DBD1WLMG STC JCL
       ibm.ibm_zos_core.zos_copy:
@@ -136,6 +139,7 @@
         src: files/$6STPROC.jcl
         location: local
         wait_time_s: 30
+        max_rc: 4
       register: result
 
     - name: Fetch existing PAGENT config file
@@ -143,6 +147,7 @@
         remote_src: true
         src: TCPIP.TCPPARMS(PAGCONF)
         dest: /tmp/ansible.PAGCONF
+        force: true
     
     - name: Get the current ATTLS config file name
       shell:
@@ -169,11 +174,17 @@
           state: absent
           force: true
 
-    - name: Update TTLS config file
-      ibm.ibm_zos_core.zos_blockinfile:
+    - name: Fetch the current TTLS config file
+      ibm.ibm_zos_core.zos_fetch:
         src: /etc/pagent/pagttls.conf
-        block: "{{ lookup('template', 'files/pagttls.conf.j2') }}"
-        insertbefore: EOF
+        dest: ./pagttls.conf.wazi
+
+    - name: Update the TTLS config file
+      ibm.ibm_zos_core.zos_copy:
+        content: |
+          {{ lookup('file', './pagttls.conf.wazi/zos/etc/pagent/pagttls.conf') }}
+          {{ lookup('template', 'files/pagttls.conf.j2') }}
+        dest: /etc/pagent/pagttls.conf
         force: true
         backup: true
         backup_name: /etc/pagent/pagttls.conf.bak
@@ -189,8 +200,6 @@
         src: TCPIP.TCPPARMS(PAGCONF)
         regexp: '^TTLSConfig  '
         line: TTLSConfig       /etc/pagent/pagttls.conf
-        backup: true
-        backup_name: TCPIP.TCPPARMS(PAGCONF9)
         force: true
 
     - name: Issue refresh command for PAGENT
