@@ -7,7 +7,7 @@
     - name: Fetch the RHOCP client
       unarchive:
         remote_src: true
-        src: https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest-4.14/openshift-client-linux.tar.gz
+        src: https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest-{{ cluster_version }}/openshift-client-linux.tar.gz
         dest: /usr/bin
         include: oc
         mode: '755'
